@@ -1,214 +1,187 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Lines202307\TomasVotruba\Lines;
 
-namespace TomasVotruba\Lines;
-
-use TomasVotruba\Lines\Enum\CounterName;
-
+use Lines202307\TomasVotruba\Lines\Enum\CounterName;
 final class MetricsCollector
 {
     /**
      * @var array<string, mixed>
      */
-    private array $counts = [];
-
-    private int $currentClassLines = 0;
-
-    private int $currentMethodLines = 0;
-
-    private int $currentNumberOfMethods = 0;
-
-    public function getPublisher(): Publisher
+    private $counts = [];
+    /**
+     * @var int
+     */
+    private $currentClassLines = 0;
+    /**
+     * @var int
+     */
+    private $currentMethodLines = 0;
+    /**
+     * @var int
+     */
+    private $currentNumberOfMethods = 0;
+    public function getPublisher() : Publisher
     {
         return new Publisher($this->counts);
     }
-
-    public function addFile(string $filename): void
+    public function addFile(string $filename) : void
     {
         $this->increment(CounterName::FILES);
-        $this->addUnique(CounterName::DIRECTORIES, dirname($filename));
+        $this->addUnique(CounterName::DIRECTORIES, \dirname($filename));
     }
-
-    public function incrementLines(int $number): void
+    public function incrementLines(int $number) : void
     {
         $this->increment(CounterName::LINES, $number);
     }
-
-    public function incrementCommentLines(int $number): void
+    public function incrementCommentLines(int $number) : void
     {
         $this->increment(CounterName::COMMENT_LINES, $number);
     }
-
-    public function incrementLogicalLines(): void
+    public function incrementLogicalLines() : void
     {
         $this->increment(CounterName::LOGICAL_LINES);
     }
-
-    public function currentClassReset(): void
+    public function currentClassReset() : void
     {
         // if ($this->currentClassLines > 0) {
         $this->addToArray('class lines', $this->currentClassLines);
         //}
-
         $this->currentClassLines = 0;
         $this->currentNumberOfMethods = 0;
     }
-
-    public function currentClassStop(): void
+    public function currentClassStop() : void
     {
         $this->addToArray('methods per class', $this->currentNumberOfMethods);
     }
-
-    public function currentClassIncrementLines(): void
+    public function currentClassIncrementLines() : void
     {
         ++$this->currentClassLines;
     }
-
-    public function currentMethodStart(): void
+    public function currentMethodStart() : void
     {
         $this->currentMethodLines = 0;
     }
-
-    public function currentClassIncrementMethods(): void
+    public function currentClassIncrementMethods() : void
     {
         ++$this->currentNumberOfMethods;
     }
-
-    public function currentMethodIncrementLines(): void
+    public function currentMethodIncrementLines() : void
     {
         ++$this->currentMethodLines;
     }
-
-    public function currentMethodStop(): void
+    public function currentMethodStop() : void
     {
         $this->addToArray(CounterName::METHOD_LINES, $this->currentMethodLines);
     }
-
-    public function incrementFunctionLines(): void
+    public function incrementFunctionLines() : void
     {
         $this->increment(CounterName::FUNCTION_LINES);
     }
-
-    public function addConstant(string $name): void
+    public function addConstant(string $name) : void
     {
         $this->addToArray('constant', $name);
     }
-
-    public function incrementNonStaticMethodCalls(): void
+    public function incrementNonStaticMethodCalls() : void
     {
         $this->increment(CounterName::NON_STATIC_METHOD_CALLS);
     }
-
-    public function incrementStaticMethodCalls(): void
+    public function incrementStaticMethodCalls() : void
     {
-        $this->increment(key: CounterName::STATIC_METHOD_CALLS);
+        $this->increment(CounterName::STATIC_METHOD_CALLS);
     }
-
-    public function addNamespace(string $namespace): void
+    public function addNamespace(string $namespace) : void
     {
         $this->addUnique('namespaces', $namespace);
     }
-
-    public function incrementInterfaces(): void
+    public function incrementInterfaces() : void
     {
         $this->increment(CounterName::INTERFACES);
     }
-
-    public function incrementTraits(): void
+    public function incrementTraits() : void
     {
         $this->increment('traits');
     }
-
-    public function incrementAbstractClasses(): void
+    public function incrementAbstractClasses() : void
     {
         $this->increment(CounterName::ABSTRACT_CLASSES);
     }
-
-    public function incrementNonFinalClasses(): void
+    public function incrementNonFinalClasses() : void
     {
         $this->increment(CounterName::NON_FINAL_CLASSES);
     }
-
-    public function incrementFinalClasses(): void
+    public function incrementFinalClasses() : void
     {
         $this->increment(CounterName::FINAL_CLASSES);
     }
-
-    public function incrementNonStaticMethods(): void
+    public function incrementNonStaticMethods() : void
     {
         $this->increment(CounterName::NON_STATIC_METHODS);
     }
-
-    public function incrementStaticMethods(): void
+    public function incrementStaticMethods() : void
     {
         $this->increment(CounterName::STATIC_METHODS);
     }
-
-    public function incrementPublicMethods(): void
+    public function incrementPublicMethods() : void
     {
         $this->increment('public methods');
     }
-
-    public function incrementProtectedMethods(): void
+    public function incrementProtectedMethods() : void
     {
         $this->increment('protected methods');
     }
-
-    public function incrementPrivateMethods(): void
+    public function incrementPrivateMethods() : void
     {
         $this->increment('private methods');
     }
-
-    public function incrementNamedFunctions(): void
+    public function incrementNamedFunctions() : void
     {
         $this->increment('named functions');
     }
-
-    public function incrementAnonymousFunctions(): void
+    public function incrementAnonymousFunctions() : void
     {
         $this->increment('anonymous functions');
     }
-
-    public function incrementGlobalConstants(): void
+    public function incrementGlobalConstants() : void
     {
         $this->increment('global constants');
     }
-
-    public function incrementPublicClassConstants(): void
+    public function incrementPublicClassConstants() : void
     {
         $this->increment('public class constants');
     }
-
-    public function incrementNonPublicClassConstants(): void
+    public function incrementNonPublicClassConstants() : void
     {
         $this->increment('non-public class constants');
     }
-
-    private function addUnique(string $key, mixed $name): void
+    /**
+     * @param mixed $name
+     */
+    private function addUnique(string $key, $name) : void
     {
         $this->check($key, []);
-        $this->counts[$key][$name] = true;
+        $this->counts[$key][$name] = \true;
     }
-
-    private function addToArray(string $key, mixed $value): void
+    /**
+     * @param mixed $value
+     */
+    private function addToArray(string $key, $value) : void
     {
         $this->check($key, []);
         $this->counts[$key][] = $value;
     }
-
-    private function increment(string $key, int $number = 1): void
+    private function increment(string $key, int $number = 1) : void
     {
         $this->check($key, 0);
         $this->counts[$key] += $number;
     }
-
     /**
      * @param int|mixed[] $default
      */
-    private function check(string $key, int|array $default): void
+    private function check(string $key, $default) : void
     {
-        if (! isset($this->counts[$key])) {
+        if (!isset($this->counts[$key])) {
             $this->counts[$key] = $default;
         }
     }
