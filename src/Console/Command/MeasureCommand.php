@@ -1,76 +1,59 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Lines202307\TomasVotruba\Lines\Console\Command;
 
-namespace TomasVotruba\Lines\Console\Command;
-
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
-use TomasVotruba\Lines\Analyser;
-use TomasVotruba\Lines\Console\OutputFormatter\JsonOutputFormatter;
-use TomasVotruba\Lines\Console\OutputFormatter\TextOutputFormatter;
-use TomasVotruba\Lines\Console\TablePrinter;
-use TomasVotruba\Lines\Finder\PhpFilesFinder;
-
+use Lines202307\Symfony\Component\Console\Command\Command;
+use Lines202307\Symfony\Component\Console\Input\InputArgument;
+use Lines202307\Symfony\Component\Console\Input\InputInterface;
+use Lines202307\Symfony\Component\Console\Input\InputOption;
+use Lines202307\Symfony\Component\Console\Output\OutputInterface;
+use Lines202307\Symfony\Component\Console\Style\SymfonyStyle;
+use Lines202307\TomasVotruba\Lines\Analyser;
+use Lines202307\TomasVotruba\Lines\Console\OutputFormatter\JsonOutputFormatter;
+use Lines202307\TomasVotruba\Lines\Console\OutputFormatter\TextOutputFormatter;
+use Lines202307\TomasVotruba\Lines\Console\TablePrinter;
+use Lines202307\TomasVotruba\Lines\Finder\PhpFilesFinder;
 final class MeasureCommand extends Command
 {
-    private readonly PhpFilesFinder $phpFilesFinder;
-
-    private readonly Analyser $analyser;
-
+    /**
+     * @readonly
+     * @var \TomasVotruba\Lines\Finder\PhpFilesFinder
+     */
+    private $phpFilesFinder;
+    /**
+     * @readonly
+     * @var \TomasVotruba\Lines\Analyser
+     */
+    private $analyser;
     public function __construct()
     {
         parent::__construct();
-
         $this->phpFilesFinder = new PhpFilesFinder();
         $this->analyser = new Analyser();
     }
-
-    protected function configure(): void
+    protected function configure() : void
     {
         $this->setName('measure');
-
         $this->setDescription('Measure lines of code in given path(s)');
-
         $this->addArgument('paths', InputArgument::REQUIRED | InputArgument::IS_ARRAY, 'Path to analyze');
-        $this->addOption(
-            'suffix',
-            null,
-            InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY,
-            'Suffix of files to analyze',
-            ['php']
-        );
-        $this->addOption(
-            'exclude',
-            null,
-            InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY,
-            'Paths to exclude',
-            []
-        );
+        $this->addOption('suffix', null, InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'Suffix of files to analyze', ['php']);
+        $this->addOption('exclude', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Paths to exclude', []);
         $this->addOption('json', null, InputOption::VALUE_NONE, 'Output in JSON format');
     }
-
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    protected function execute(InputInterface $input, OutputInterface $output) : int
     {
         $symfonyStyle = new SymfonyStyle($input, $output);
-
         $paths = (array) $input->getArgument('paths');
         $suffixes = (array) $input->getOption('suffix');
         $excludes = (array) $input->getOption('exclude');
         $isJson = (bool) $input->getOption('json');
-
         $filePaths = $this->phpFilesFinder->findInDirectories($paths, $suffixes, $excludes);
         if ($filePaths === []) {
             $output->writeln('<error>No files found to scan</error>');
             return Command::FAILURE;
         }
-
         $measurmentResult = $this->analyser->measureFiles($filePaths);
-
         // print results
         if ($isJson) {
             $jsonOutputFormatter = new JsonOutputFormatter();
@@ -80,7 +63,6 @@ final class MeasureCommand extends Command
             $textOutputFormatter = new TextOutputFormatter($tablePrinter);
             $textOutputFormatter->printResult($measurmentResult, $output);
         }
-
         return Command::SUCCESS;
     }
 }
